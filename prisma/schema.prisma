@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  name      String
+
+  email     String   @unique
+
+  password  String
+
+  tasks      Task[]
+
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  name        String
+
+  description String?
+
+  tasks       Task[]
+
+  createdAt   DateTime @default(now())
+}
+
+model Sprint {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  name       String
+
+  projectId  String   @db.ObjectId
+
+  tasks       Task[]
+
+  createdAt  DateTime @default(now())
+}
+
+model Task {
+  id             String      @id @default(auto()) @map("_id") @db.ObjectId
+
+  title          String
+
+  description    String?
+
+  status         TaskStatus  @default(TODO)
+
+  priority       Priority    @default(MEDIUM)
+
+  projectId      String      @db.ObjectId
+
+  sprintId       String?     @db.ObjectId
+
+  assigneeId     String?     @db.ObjectId
+
+  parentTaskId   String?     @db.ObjectId
+
+  blockedByIds   String[]    @db.ObjectId
+
+  project        Project     @relation(fields: [projectId], references: [id])
+
+  sprint         Sprint?     @relation(fields: [sprintId], references: [id])
+
+  assignee       User?       @relation(fields: [assigneeId], references: [id])
+
+  parentTask     Task? @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  subtasks       Task[] @relation("Subtasks")
+
+  createdAt      DateTime @default(now())
+
+  updatedAt      DateTime @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  userId      String   @db.ObjectId
+
+  message     String
+
+  read        Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+}
