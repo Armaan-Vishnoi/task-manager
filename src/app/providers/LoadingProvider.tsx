@@ -30,66 +30,65 @@ export default function LoadingProvider({ children }: { children: React.ReactNod
   const showTimerRef = useRef<number | null>(null);
   const hideTimerRef = useRef<number | null>(null);
   const visibleStartRef = useRef<number | null>(null);
+  const visibleRef = useRef(false);
   const mounted = useRef(true);
+
+  const setVisibleState = (nextVisible: boolean) => {
+    visibleRef.current = nextVisible;
+    setVisible(nextVisible);
+  };
+
+  const scheduleShow = () => {
+    if (showTimerRef.current) return;
+    showTimerRef.current = window.setTimeout(() => {
+      showTimerRef.current = null;
+      if (!mounted.current) return;
+      if (activeCountRef.current > 0) {
+        setVisibleState(true);
+        visibleStartRef.current = Date.now();
+      }
+    }, SHOW_DELAY_MS) as unknown as number;
+  };
+
+  const scheduleHide = () => {
+    if (!visibleRef.current) {
+      if (showTimerRef.current) {
+        clearTimeout(showTimerRef.current as number);
+        showTimerRef.current = null;
+      }
+      return;
+    }
+
+    const elapsed = visibleStartRef.current ? Date.now() - visibleStartRef.current : MIN_VISIBLE_MS;
+
+    if (elapsed >= MIN_VISIBLE_MS) {
+      setVisibleState(false);
+      visibleStartRef.current = null;
+    } else {
+      if (hideTimerRef.current) return;
+      hideTimerRef.current = window.setTimeout(() => {
+        hideTimerRef.current = null;
+        setVisibleState(false);
+        visibleStartRef.current = null;
+      }, MIN_VISIBLE_MS - elapsed) as unknown as number;
+    }
+  };
 
   useEffect(() => {
     mounted.current = true;
 
     const originalFetch = window.fetch;
 
-    const scheduleShow = () => {
-      if (showTimerRef.current) return;
-      showTimerRef.current = window.setTimeout(() => {
-        showTimerRef.current = null;
-        if (!mounted.current) return;
-        if (activeCountRef.current > 0) {
-          setVisible(true);
-          visibleStartRef.current = Date.now();
-        }
-      }, SHOW_DELAY_MS) as unknown as number;
-    };
-
-    const scheduleHide = () => {
-      // If never shown, simply clear any pending show timer
-      if (!visible) {
-        if (showTimerRef.current) {
-          clearTimeout(showTimerRef.current as number);
-          showTimerRef.current = null;
-        }
-        return;
-      }
-
-      const elapsed = visibleStartRef.current ? Date.now() - visibleStartRef.current : MIN_VISIBLE_MS;
-
-      if (elapsed >= MIN_VISIBLE_MS) {
-        setVisible(false);
-        visibleStartRef.current = null;
-      } else {
-        // ensure min visible duration
-        if (hideTimerRef.current) return;
-        hideTimerRef.current = window.setTimeout(() => {
-          hideTimerRef.current = null;
-          setVisible(false);
-          visibleStartRef.current = null;
-        }, MIN_VISIBLE_MS - elapsed) as unknown as number;
-      }
-    };
-
     // Wrap global fetch to automatically show loader for longer network requests
     window.fetch = async (...args: Parameters<typeof fetch>) => {
-      activeCountRef.current = activeCountRef.current + 1;
-
-      // only schedule showing the loader after a short delay
+      activeCountRef.current += 1;
       scheduleShow();
 
       try {
-        const res = await originalFetch(...args);
-        return res;
+        return await originalFetch(...args);
       } finally {
         activeCountRef.current = Math.max(0, activeCountRef.current - 1);
-
         if (activeCountRef.current === 0) {
-          // no more active requests — hide loader respecting min duration
           scheduleHide();
         }
       }
@@ -108,58 +107,22 @@ export default function LoadingProvider({ children }: { children: React.ReactNod
         hideTimerRef.current = null;
       }
 
-      // restore original fetch
       try {
         window.fetch = originalFetch;
       } catch (e) {
         // ignore
       }
     };
-  }, [visible]);
+  }, []);
 
   const start = () => {
-    activeCountRef.current = activeCountRef.current + 1;
-    scheduleShowManual();
+    activeCountRef.current += 1;
+    scheduleShow();
   };
 
   const stop = () => {
     activeCountRef.current = Math.max(0, activeCountRef.current - 1);
-    if (activeCountRef.current === 0) scheduleHideManual();
-  };
-
-  // helper manual schedule functions (kept outside effect scope for start/stop)
-  const scheduleShowManual = () => {
-    if (showTimerRef.current) return;
-    showTimerRef.current = window.setTimeout(() => {
-      showTimerRef.current = null;
-      if (activeCountRef.current > 0) {
-        setVisible(true);
-        visibleStartRef.current = Date.now();
-      }
-    }, SHOW_DELAY_MS) as unknown as number;
-  };
-
-  const scheduleHideManual = () => {
-    if (!visible) {
-      if (showTimerRef.current) {
-        clearTimeout(showTimerRef.current as number);
-        showTimerRef.current = null;
-      }
-      return;
-    }
-
-    const elapsed = visibleStartRef.current ? Date.now() - visibleStartRef.current : MIN_VISIBLE_MS;
-    if (elapsed >= MIN_VISIBLE_MS) {
-      setVisible(false);
-      visibleStartRef.current = null;
-    } else {
-      if (hideTimerRef.current) return;
-      hideTimerRef.current = window.setTimeout(() => {
-        hideTimerRef.current = null;
-        setVisible(false);
-        visibleStartRef.current = null;
-      }, MIN_VISIBLE_MS - elapsed) as unknown as number;
-    }
+    if (activeCountRef.current === 0) scheduleHide();
   };
 
   const value = {
