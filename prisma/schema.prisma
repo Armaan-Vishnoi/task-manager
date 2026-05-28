@@ -20,7 +20,25 @@ enum Priority {
   HIGH
 }
 
+enum UserRole {
+  USER
+  PROJECT_MANAGER
+  ADMIN
+}
+
+enum ActivityType {
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_DELETED
+  TASK_COMPLETED
+  TIME_LOG_CREATED
+  TIME_LOG_UPDATED
+  TIME_LOG_DELETED
+  PROJECT_CREATED
+}
+
 model User {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   name String
@@ -28,6 +46,10 @@ model User {
   email String @unique
 
   password String
+
+  role UserRole @default(USER)
+
+  avatar String?
 
   createdAt DateTime @default(now())
 
@@ -42,14 +64,21 @@ model User {
   notifications Notification[]
 
   activities Activity[]
+
+  timeLogs TimeLog[]
 }
 
 model Project {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   name String
 
   description String?
+
+  color String?
+
+  archived Boolean @default(false)
 
   createdAt DateTime @default(now())
 
@@ -65,9 +94,18 @@ model Project {
 }
 
 model Sprint {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   name String
+
+  goal String?
+
+  startDate DateTime?
+
+  endDate DateTime?
+
+  completed Boolean @default(false)
 
   createdAt DateTime @default(now())
 
@@ -81,6 +119,7 @@ model Sprint {
 }
 
 model Task {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   title String
@@ -93,7 +132,15 @@ model Task {
 
   dueDate DateTime?
 
+  estimatedHours Float?
+
+  completed Boolean @default(false)
+
+  archived Boolean @default(false)
+
   blockedByIds String[] @db.ObjectId
+
+  tags String[]
 
   createdAt DateTime @default(now())
 
@@ -120,9 +167,39 @@ model Task {
   parentTask Task? @relation("Subtasks", fields: [parentTaskId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   subtasks Task[] @relation("Subtasks")
+
+  timeLogs TimeLog[]
+}
+
+model TimeLog {
+
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  taskId String @db.ObjectId
+
+  task Task @relation(fields: [taskId], references: [id])
+
+  userId String @db.ObjectId
+
+  user User @relation(fields: [userId], references: [id])
+
+  date DateTime
+
+  duration Float
+
+  description String
+
+  edited Boolean @default(false)
+
+  deleted Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
   message String
@@ -139,9 +216,14 @@ model Notification {
 }
 
 model Activity {
+
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
+  type ActivityType
+
   message String
+
+  metadata Json?
 
   createdAt DateTime @default(now())
 

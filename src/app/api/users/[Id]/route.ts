@@ -9,8 +9,6 @@ export async function PATCH(
   { params }: any
 ) {
   try {
-    const userId = params.id ?? params.Id;
-
     const body =
       await request.json();
 
@@ -57,7 +55,7 @@ export async function PATCH(
     const updatedUser =
       await prisma.user.update({
         where: {
-          id: userId,
+          id: params.id,
         },
 
         data: updateData,

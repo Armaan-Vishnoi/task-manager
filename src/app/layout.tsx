@@ -1,5 +1,4 @@
 import "./globals.css"
-import LoadingProvider from "./providers/LoadingProvider";
 
 export const metadata = {
   title: "Task Manager",
@@ -15,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <LoadingProvider>{children}</LoadingProvider>
+        {children}
       </body>
     </html>
   )

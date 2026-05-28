@@ -350,7 +350,27 @@ export default function Navbar({
                       >
                         {/* DELETE */}
 
-                        
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+
+                            deleteNotification(
+                              notification.id
+                            );
+                          }}
+                          className="
+                            absolute top-3 right-3
+                            h-7 w-7
+                            flex items-center justify-center
+                            rounded-xl
+                            bg-rose-500/10
+                            text-rose-400
+                            transition-all duration-300
+                            hover:bg-rose-500/20
+                          "
+                        >
+                          ✕
+                        </button>
 
                         {/* CONTENT */}
 

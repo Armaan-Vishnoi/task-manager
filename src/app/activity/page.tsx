@@ -262,6 +262,26 @@ export default function ActivityPage() {
                               "
                           />
 
+                          {/* DELETE */}
+
+                          <button
+                            onClick={() => deleteNotification(notification.id)}
+                            className="
+                                absolute
+                                top-3 right-3
+                                h-8 w-8
+                                rounded-xl
+                                border border-red-500/10
+                                bg-red-500/10
+                                text-red-400
+                                flex items-center justify-center
+                                transition-all duration-300
+                                hover:bg-red-500/20
+                                hover:scale-105
+                              "
+                          >
+                            <FaTrash size={10} />
+                          </button>
 
                           {/* CONTENT */}
 

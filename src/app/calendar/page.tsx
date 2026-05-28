@@ -53,13 +53,7 @@ export default function CalendarPage() {
 
   async function fetchTasks() {
     try {
-      const storedUser = localStorage.getItem("user");
-
-      const user = storedUser ? JSON.parse(storedUser) : null;
-
-      const response = await fetch(
-        `http://localhost:3000/api/tasks?userId=${user?.id ?? ""}`,
-      );
+      const response = await fetch("http://localhost:3000/api/tasks");
 
       const data = await response.json();
 

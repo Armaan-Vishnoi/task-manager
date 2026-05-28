@@ -14,22 +14,33 @@ export async function GET(
       request.url
     );
 
-    const projectId = searchParams.get("projectId");
+    const projectId =
+      searchParams.get(
+        "projectId"
+      );
 
-    const userId = searchParams.get("userId");
+    const userId =
+      searchParams.get(
+        "userId"
+      );
 
-    if (!userId) {
+    if (
+      !projectId ||
+      !userId
+    ) {
+
       return NextResponse.json([]);
     }
 
-    const where: any = { userId };
+    const tasks =
+      await prisma.task.findMany({
 
-    if (projectId) {
-      where.projectId = projectId;
-    }
+        where: {
 
-    const tasks = await prisma.task.findMany({
-      where,
+          projectId,
+
+          userId,
+        },
 
         include: {
 

@@ -406,7 +406,6 @@ export default function LoginPage() {
             <p className="text-sm text-slate-500">
               Don’t have an account?{" "}
               <span
-                onClick={() => router.push("/register")}
                 className="
                   font-bold
                   text-cyan-400

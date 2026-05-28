@@ -15,14 +15,6 @@ import {
   FaUser,
 } from "react-icons/fa";
 
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "./ui/select";
-
 interface Task {
   id: string;
 
@@ -147,11 +139,6 @@ export default function TaskModal({
 
     setError("");
 
-    // Normalize empty-string values to null for backend
-    const parentTaskIdPayload = parentTaskId === "" ? null : parentTaskId;
-    const dependencyIdPayload = dependencyId === "" ? null : dependencyId;
-    const assignedUserIdPayload = assignedUserId === "" ? null : assignedUserId;
-
     const storedUser =
       localStorage.getItem(
         "user"
@@ -183,13 +170,22 @@ export default function TaskModal({
           },
 
           body: JSON.stringify({
+
             title,
+
             priority,
+
             projectId,
+
             dueDate,
-            assignedUserId: assignedUserIdPayload,
-            parentTaskId: parentTaskIdPayload,
-            userId: user.id,
+
+            assignedUserId,
+
+            parentTaskId:
+              parentTaskId || null,
+
+            userId:
+              user.id,
           }),
         }
       );
@@ -206,16 +202,20 @@ export default function TaskModal({
       return;
     }
 
-    if (dependencyId && dependencyIdPayload) {
+    if (dependencyId) {
+
       await fetch(
         `http://localhost:3000/api/tasks/${createdTask.id}/dependencies`,
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
-            dependencyId: dependencyIdPayload,
+            dependencyId,
           }),
         }
       );
@@ -461,17 +461,30 @@ export default function TaskModal({
                 </div>
               </div>
 
-              <Select value={priority} onValueChange={(val: string) => setPriority(val)}>
-                <SelectTrigger className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-bold text-white">
-                  <SelectValue />
-                </SelectTrigger>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="
+                  w-full
+                  rounded-2xl
+                  border border-white/10
+                  bg-white/[0.04]
+                  px-4 py-4
+                  text-sm
+                  font-bold
+                  text-white
+                  outline-none
+                  transition-all duration-300
+                  focus:border-indigo-500/30
+                  focus:ring-4 focus:ring-indigo-500/10
+                "
+              >
+                <option value="LOW">LOW</option>
 
-                <SelectContent>
-                  <SelectItem value="LOW">LOW</SelectItem>
-                  <SelectItem value="MEDIUM">MEDIUM</SelectItem>
-                  <SelectItem value="HIGH">HIGH</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="MEDIUM">MEDIUM</option>
+
+                <option value="HIGH">HIGH</option>
+              </select>
             </div>
 
             {/* DATE */}
@@ -566,10 +579,23 @@ export default function TaskModal({
               <select
                 value={parentTaskId}
                 onChange={(e) => setParentTaskId(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+                className="
+                  w-full
+                  rounded-2xl
+                  border border-white/10
+                  bg-white/[0.04]
+                  px-4 py-4
+                  text-sm
+                  font-semibold
+                  text-white
+                  outline-none
+                  transition-all duration-300
+                  focus:border-indigo-500/30
+                  focus:ring-4 focus:ring-indigo-500/10
+                "
               >
-                <option value="">Select parent task</option>
-                <option value="NONE">Main Task</option>
+                <option value="">Main Task</option>
+
                 {tasks.map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.title}
@@ -613,10 +639,23 @@ export default function TaskModal({
               <select
                 value={dependencyId}
                 onChange={(e) => setDependencyId(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+                className="
+                  w-full
+                  rounded-2xl
+                  border border-white/10
+                  bg-white/[0.04]
+                  px-4 py-4
+                  text-sm
+                  font-semibold
+                  text-white
+                  outline-none
+                  transition-all duration-300
+                  focus:border-indigo-500/30
+                  focus:ring-4 focus:ring-indigo-500/10
+                "
               >
-                <option value="">Select dependency</option>
-                <option value="NONE">No Dependency</option>
+                <option value="">No Dependency</option>
+
                 {tasks.map((task) => (
                   <option key={task.id} value={task.id}>
                     {task.title}
@@ -661,10 +700,23 @@ export default function TaskModal({
             <select
               value={assignedUserId}
               onChange={(e) => setAssignedUserId(e.target.value)}
-              className="w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm font-semibold text-white"
+              className="
+                w-full
+                rounded-2xl
+                border border-white/10
+                bg-white/[0.04]
+                px-4 py-4
+                text-sm
+                font-semibold
+                text-white
+                outline-none
+                transition-all duration-300
+                focus:border-indigo-500/30
+                focus:ring-4 focus:ring-indigo-500/10
+              "
             >
-              <option value="">Assign user</option>
-              <option value="NONE">Unassigned</option>
+              <option value="">Unassigned</option>
+
               {users.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.name}

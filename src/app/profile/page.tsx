@@ -260,7 +260,32 @@ export default function ProfilePage() {
 
                   {/* IMAGE BUTTON */}
 
-                  
+                  <label
+                    className="
+                      mt-5
+                      inline-flex
+                      items-center
+                      justify-center
+                      px-5 py-3
+                      rounded-2xl
+                      border border-cyan-500/20
+                      bg-cyan-500/10
+                      text-cyan-300
+                      text-sm
+                      font-bold
+                      cursor-pointer
+                      hover:bg-cyan-500/20
+                      transition-all duration-300
+                    "
+                  >
+                    Upload Image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      hidden
+                      onChange={handleImageUpload}
+                    />
+                  </label>
 
                   {/* USER */}
 
