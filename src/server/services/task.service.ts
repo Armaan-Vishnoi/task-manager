@@ -1,4 +1,4 @@
-import { prisma } from "../../../../task-manager/src/lib/prisma"
+import { prisma } from "@/lib/prisma"
 
 export class TaskService {
 

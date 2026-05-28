@@ -1,42 +1,141 @@
-import { NextResponse }
-from "next/server"
+import { NextResponse } from "next/server";
 
-import {
-  createTaskSchema
-} from "@/validators/task.validator"
+import { prisma } from "@/lib/prisma";
 
-import {
-  TaskService
-} from "@/server/services/task.service"
-
-export async function POST(
-  req: Request
+export async function GET(
+  request: Request
 ) {
 
   try {
 
-    const body =
-      await req.json()
+    const {
+      searchParams
+    } = new URL(
+      request.url
+    );
 
-    const validated =
-      createTaskSchema.parse(body)
+    const projectId = searchParams.get("projectId");
 
-    const task =
-      await TaskService.createTask(
-        validated
-      )
+    const userId = searchParams.get("userId");
 
-    return NextResponse.json(task)
+    if (!userId) {
+      return NextResponse.json([]);
+    }
+
+    const where: any = { userId };
+
+    if (projectId) {
+      where.projectId = projectId;
+    }
+
+    const tasks = await prisma.task.findMany({
+      where,
+
+        include: {
+
+          assignee: {
+
+            select: {
+
+              id: true,
+
+              name: true,
+            },
+          },
+
+          subtasks: true,
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    return NextResponse.json(
+      tasks
+    );
 
   } catch (error: any) {
 
     return NextResponse.json(
       {
-        error: error.message
+        error:
+          error.message,
       },
       {
-        status: 400
+        status: 500,
       }
-    )
+    );
+  }
+}
+
+export async function POST(
+  request: Request
+) {
+
+  try {
+
+    const body =
+      await request.json();
+
+    const task =
+      await prisma.task.create({
+
+        data: {
+
+          title:
+            body.title,
+
+          description:
+            body.description || "",
+
+          status:
+            body.status || "TODO",
+
+          priority:
+            body.priority || "MEDIUM",
+
+          dueDate:
+            body.dueDate
+              ? new Date(
+                  body.dueDate
+                )
+              : null,
+
+          blockedByIds:
+            body.blockedByIds || [],
+
+          parentTaskId:
+            body.parentTaskId || null,
+
+          sprintId:
+            body.sprintId || null,
+
+          projectId:
+            body.projectId,
+
+          userId:
+            body.userId,
+
+          assigneeId:
+            body.assignedUserId || null,
+        },
+      });
+
+    return NextResponse.json(
+      task
+    );
+
+  } catch (error: any) {
+
+    return NextResponse.json(
+      {
+        error:
+          error.message,
+      },
+      {
+        status: 500,
+      }
+    );
   }
 }
